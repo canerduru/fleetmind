@@ -1,6 +1,7 @@
 {
   "name": "app",
   "private": true,
+  "homepage": "https://canerduru.github.io/fleetmind",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
