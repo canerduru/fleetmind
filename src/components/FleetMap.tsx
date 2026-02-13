@@ -36,10 +36,17 @@ function MapUpdater() {
 }
 
 export function FleetMap() {
-  const { trucks, setSelectedTruck } = useFleetStore();
+  const { trucks, setSelectedTruck, searchQuery, statusFilter } = useFleetStore();
 
   // Calculate center based on trucks or default to US center
   const center: [number, number] = [39.8283, -98.5795]; 
+
+  const filteredTrucks = trucks.filter(truck => {
+    const matchesSearch = truck.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          truck.driver.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || truck.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="h-full w-full relative z-0">
@@ -54,7 +61,7 @@ export function FleetMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapUpdater />
-        {trucks.map((truck) => (
+        {filteredTrucks.map((truck) => (
           <Marker 
             key={truck.id} 
             position={[truck.lat, truck.lng]}
