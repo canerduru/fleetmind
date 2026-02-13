@@ -16,6 +16,7 @@ interface FleetState {
   searchQuery: string;
   statusFilter: Truck['status'] | 'all';
   modal: ModalState;
+  isSimulationRunning: boolean;
   
   setTrucks: (trucks: Truck[]) => void;
   setAlerts: (alerts: Alert[]) => void;
@@ -29,6 +30,8 @@ interface FleetState {
   deleteTruck: (truckId: string) => void;
   openModal: (type: 'add' | 'edit', data?: Truck) => void;
   closeModal: () => void;
+  toggleSimulation: () => void;
+  updateTruckPositions: () => void;
 }
 
 export const useFleetStore = create<FleetState>()(
@@ -40,6 +43,7 @@ export const useFleetStore = create<FleetState>()(
       searchQuery: '',
       statusFilter: 'all',
       modal: { isOpen: false, type: 'add' },
+      isSimulationRunning: false,
 
       setTrucks: (trucks) => set({ trucks }),
       setAlerts: (alerts) => set({ alerts }),
@@ -89,11 +93,29 @@ export const useFleetStore = create<FleetState>()(
         trucks: state.trucks.filter((t) => t.id !== truckId)
       })),
       openModal: (type, data) => set({ modal: { isOpen: true, type, data } }),
-      closeModal: () => set({ modal: { isOpen: false, type: 'add', data: undefined } })
+      closeModal: () => set({ modal: { isOpen: false, type: 'add', data: undefined } }),
+      toggleSimulation: () => set((state) => ({ isSimulationRunning: !state.isSimulationRunning })),
+      updateTruckPositions: () => set((state) => ({
+        trucks: state.trucks.map((truck) => {
+          if (truck.status !== 'on_route') return truck;
+
+          // Simple simulation: Move slightly randomly
+          // Ideally, this would move towards a destination, but random walk is fine for now
+          const latChange = (Math.random() - 0.5) * 0.01;
+          const lngChange = (Math.random() - 0.5) * 0.01;
+
+          return {
+            ...truck,
+            lat: truck.lat + latChange,
+            lng: truck.lng + lngChange,
+            fuel_percent: Math.max(0, truck.fuel_percent - 0.1) // Consume fuel
+          };
+        })
+      }))
     }),
     {
-      name: 'fleet-storage', // name of the item in the storage (must be unique)
-      partialize: (state) => ({ trucks: state.trucks, alerts: state.alerts }), // only persist trucks and alerts
+      name: 'fleet-storage',
+      partialize: (state) => ({ trucks: state.trucks, alerts: state.alerts }),
     }
   )
 );

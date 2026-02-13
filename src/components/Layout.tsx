@@ -1,5 +1,6 @@
 import { Truck, Bell, Menu } from "lucide-react";
 import { Button } from "./ui/Button";
+import { SimulationController } from "./SimulationController";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,9 @@ export function Layout({ children }: LayoutProps) {
         <div className="flex items-center gap-2 font-bold text-xl text-primary">
           <Truck className="h-6 w-6" />
           <span>FleetMind</span>
+        </div>
+        <div className="ml-8">
+           <SimulationController />
         </div>
         <nav className="flex-1">
           {/* Navigation items can go here */}
