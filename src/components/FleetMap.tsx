@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import { useFleetStore } from '../store/useFleetStore';
 import { Button } from './ui/Button';
 import { Pencil } from 'lucide-react';
@@ -63,44 +63,65 @@ export function FleetMap() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapUpdater />
-        {filteredTrucks.map((truck) => (
-          <Marker 
-            key={truck.id} 
-            position={[truck.lat, truck.lng]}
-            eventHandlers={{
-              click: () => {
-                setSelectedTruck(truck.id);
-              },
-            }}
-          >
-            <Popup>
-              <div className="p-2 min-w-[200px]">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg">{truck.id}</h3>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    title="Edit Truck"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openModal('edit', truck);
-                    }}
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </Button>
-                </div>
-                <p className="text-sm font-medium">{truck.driver}</p>
-                <div className="mt-2 text-xs space-y-1">
-                  <p>Status: <span className="capitalize font-semibold">{truck.status.replace('_', ' ')}</span></p>
-                  <p>Speed: 65 mph</p>
-                  <p>ETA: {new Date(truck.eta).toLocaleTimeString()}</p>
-                  <p>Route: {truck.from} → {truck.to}</p>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {filteredTrucks.map((truck) => {
+          // Generate a theoretical destination for demo purposes (e.g., +2 lat, +2 lng)
+          // In a real app, this would be part of the truck data
+          const destLat = truck.lat + (truck.id.length % 2 === 0 ? 2 : -2);
+          const destLng = truck.lng + (truck.id.length % 3 === 0 ? 2 : -2);
+
+          return (
+            <div key={truck.id}>
+              {/* Route Line for 'on_route' or 'delayed' trucks */}
+              {(truck.status === 'on_route' || truck.status === 'delayed') && (
+                <Polyline
+                  positions={[[truck.lat, truck.lng], [destLat, destLng]]}
+                  pathOptions={{
+                    color: truck.status === 'delayed' ? 'red' : 'blue',
+                    dashArray: '5, 10',
+                    weight: 2,
+                    opacity: 0.6
+                  }}
+                />
+              )}
+
+              <Marker
+                position={[truck.lat, truck.lng]}
+                eventHandlers={{
+                  click: () => {
+                    setSelectedTruck(truck.id);
+                  },
+                }}
+              >
+                <Popup>
+                  <div className="p-2 min-w-[200px]">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-bold text-lg">{truck.id}</h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="Edit Truck"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModal('edit', truck);
+                        }}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <p className="text-sm font-medium">{truck.driver}</p>
+                    <div className="mt-2 text-xs space-y-1">
+                      <p>Status: <span className="capitalize font-semibold">{truck.status.replace('_', ' ')}</span></p>
+                      <p>Speed: 65 mph</p>
+                      <p>ETA: {new Date(truck.eta).toLocaleTimeString()}</p>
+                      <p>Route: {truck.from} → {truck.to}</p>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            </div>
+          );
+        })}
       </MapContainer>
     </div>
   );

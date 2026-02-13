@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useFleetStore } from "../store/useFleetStore";
 import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
+import { Modal } from "./ui/Modal";
+import { TruckForm } from "./TruckForm";
 import { cn } from "../lib/utils";
 import type { Truck } from "../types";
-import { Search, Plus, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, LayoutDashboard, Truck as TruckIcon, AlertTriangle, Droplet } from "lucide-react";
 
 export function TruckList() {
   const {
@@ -51,14 +54,51 @@ export function TruckList() {
     return matchesSearch && matchesStatus;
   });
 
+  const totalTrucks = trucks.length;
+  const onRouteCount = trucks.filter(t => t.status === 'on_route').length;
+  const delayedCount = trucks.filter(t => t.status === 'delayed').length;
+  const avgFuel = trucks.reduce((acc, t) => acc + t.fuel_percent, 0) / (totalTrucks || 1);
+
   return (
     <div className="flex flex-col h-full border-r bg-card w-96">
       <div className="p-4 border-b space-y-4">
-        <div className="flex justify-between items-center">
+        {/* Dashboard Stats */}
+        <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+          <div className="flex items-center gap-2 p-2 rounded bg-accent/50">
+            <TruckIcon className="h-4 w-4 text-primary" />
+            <div>
+              <div className="font-bold text-lg">{totalTrucks}</div>
+              <div className="text-muted-foreground">Total Fleet</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded bg-accent/50">
+            <LayoutDashboard className="h-4 w-4 text-green-500" />
+            <div>
+              <div className="font-bold text-lg">{onRouteCount}</div>
+              <div className="text-muted-foreground">On Route</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded bg-accent/50">
+            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            <div>
+              <div className="font-bold text-lg">{delayedCount}</div>
+              <div className="text-muted-foreground">Delayed</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 p-2 rounded bg-accent/50">
+            <Droplet className="h-4 w-4 text-blue-500" />
+            <div>
+              <div className="font-bold text-lg">{avgFuel.toFixed(0)}%</div>
+              <div className="text-muted-foreground">Avg Fuel</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center pt-2 border-t">
           <div>
-            <h2 className="font-semibold text-lg">Fleet Status</h2>
+            <h2 className="font-semibold text-lg">Fleet List</h2>
             <div className="text-sm text-muted-foreground">
-              {filteredTrucks.length} Active Vehicles
+              {filteredTrucks.length} Matches
             </div>
           </div>
           <Button size="icon" onClick={handleAddClick} title="Add Truck">

@@ -1,6 +1,7 @@
 import { Truck, Bell, Menu } from "lucide-react";
 import { Button } from "./ui/Button";
 import { SimulationController } from "./SimulationController";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ export function Layout({ children }: LayoutProps) {
           {/* Navigation items can go here */}
         </nav>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5" />
           </Button>
