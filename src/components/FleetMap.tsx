@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { useFleetStore } from '../store/useFleetStore';
+import { Button } from './ui/Button';
+import { Pencil } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -36,7 +38,7 @@ function MapUpdater() {
 }
 
 export function FleetMap() {
-  const { trucks, setSelectedTruck, searchQuery, statusFilter } = useFleetStore();
+  const { trucks, setSelectedTruck, searchQuery, statusFilter, openModal } = useFleetStore();
 
   // Calculate center based on trucks or default to US center
   const center: [number, number] = [39.8283, -98.5795]; 
@@ -72,13 +74,28 @@ export function FleetMap() {
             }}
           >
             <Popup>
-              <div className="p-2">
-                <h3 className="font-bold text-lg">{truck.id}</h3>
+              <div className="p-2 min-w-[200px]">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-lg">{truck.id}</h3>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    title="Edit Truck"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openModal('edit', truck);
+                    }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                </div>
                 <p className="text-sm font-medium">{truck.driver}</p>
-                <div className="mt-2 text-xs">
-                  <p>Status: <span className="capitalize">{truck.status.replace('_', ' ')}</span></p>
+                <div className="mt-2 text-xs space-y-1">
+                  <p>Status: <span className="capitalize font-semibold">{truck.status.replace('_', ' ')}</span></p>
                   <p>Speed: 65 mph</p>
                   <p>ETA: {new Date(truck.eta).toLocaleTimeString()}</p>
+                  <p>Route: {truck.from} → {truck.to}</p>
                 </div>
               </div>
             </Popup>
